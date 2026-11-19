@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar — pre-token protocols ranked by implied FDV</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="atmosphere" aria-hidden="true"></div>
+
+<header class="masthead">
+  <div class="brand">
+    <div class="radar-mark" aria-hidden="true">
+      <span class="ring ring-1"></span>
+      <span class="ring ring-2"></span>
+      <span class="sweep"></span>
+      <span class="blip blip-1"></span>
+      <span class="blip blip-2"></span>
+      <span class="blip blip-3"></span>
+    </div>
+    <div class="brand-text">
+      <p class="eyebrow">make.fun bounty · token-radar-01</p>
+      <h1>Token<span>Radar</span></h1>
+      <p class="tagline">Protocols with no token yet, ranked by the FDV their own TVL, growth and age can support.</p>
+    </div>
+  </div>
+  <div class="dateline">
+    <p class="asof"><span class="dot"></span><span id="asof">snapshot</span></p>
+    <p class="source" id="source">sealed input</p>
+    <button id="model-btn" class="ghost-btn" type="button">How the value model works</button>
+  </div>
+</header>
+
+<main>
+  <section class="stats" id="stats" aria-label="Radar summary"></section>
+
+  <section class="controls" aria-label="Filters and views">
+    <div class="tabs" role="tablist" aria-label="Board">
+      <button class="tab is-active" id="tab-pre" role="tab" aria-selected="true" data-tab="pre" type="button">Pre-token board</button>
+      <button class="tab" id="tab-live" role="tab" aria-selected="false" data-tab="live" type="button">Live benchmarks</button>
+    </div>
+    <div class="filters">
+      <label class="search">
+        <span class="search-glyph" aria-hidden="true"></span>
+        <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Filter by name, category or chain" aria-label="Filter protocols">
+      </label>
+      <label class="pick">
+        <span>Category</span>
+        <select id="category" aria-label="Category"></select>
+      </label>
+      <label class="pick">
+        <span>Chain</span>
+        <select id="chain" aria-label="Chain"></select>
+      </label>
+      <label class="pick">
+        <span>Sort</span>
+        <select id="sort" aria-label="Sort order">
+          <option value="implied">Implied FDV</option>
+          <option value="tvl">TVL</option>
+          <option value="growth">7-day growth</option>
+          <option value="age">Age with no token</option>
+          <option value="name">Name</option>
+        </select>
+      </label>
+      <label class="check">
+        <input id="watch" type="checkbox">
+        <span>Watchlist only</span>
+      </label>
+    </div>
+  </section>
+
+  <div class="board-meta">
+    <p id="count" class="count" aria-live="polite"></p>
+    <p class="legend"><span class="legend-bar"></span>bar = implied FDV against the board's highest</p>
+  </div>
+
+  <section class="board-wrap" id="board-wrap">
+    <div class="table-head" id="table-head" role="row">
+      <span class="c-rank">#</span>
+      <span class="c-name">Protocol</span>
+      <span class="c-cat">Category</span>
+      <span class="c-num">TVL</span>
+      <span class="c-num">7d</span>
+      <span class="c-num">Implied FDV</span>
+      <span class="c-num">Benchmark</span>
+      <span class="c-bar">Signal</span>
+    </div>
+    <div id="board" class="board" role="rowgroup" aria-label="Ranked pre-token protocols"></div>
+    <div id="live" class="live-board" role="rowgroup" aria-label="Live-token benchmarks" hidden></div>
+    <p class="empty" id="empty" hidden>No protocol matches those filters. Clear the search or pick another category.</p>
+  </section>
+
+  <section class="notes" id="notes">
+    <div>
+      <h2>What this board is</h2>
+      <p>Every row is a protocol whose sealed snapshot entry records no token: no market cap, no CoinGecko id, no symbol. The ranked board carries all of them, not only the house watchlist. Protocols that already trade are kept apart on the <button class="link-btn" id="live-link" type="button">live benchmarks</button> tab; their market cap divided by TVL is what sets each category's multiple.</p>
+    </div>
+    <div>
+      <h2>What it is not</h2>
+      <p>DefiLlama's record is not proof. A protocol can carry a token its record does not show, and this board would still list it. The implied value is a model output from three inputs, not a forecast, a promise or investment advice; the farm plans are steps for collecting a possible launch, with their costs and times stated.</p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p>Token Radar · built by an AI agent for make.fun's token-radar-01 bounty</p>
+    <p id="foot-source">source: sealed snapshot</p>
+  </footer>
+</main>
+
+<div id="scrim" class="scrim" hidden></div>
+
+<aside id="detail" class="detail" aria-label="Protocol detail" hidden>
+  <div class="detail-head">
+    <p class="detail-rank" id="detail-rank">Rank 1</p>
+    <button id="detail-close" class="close-btn" type="button" aria-label="Close detail">Close</button>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</aside>
+
+<section id="model-sheet" class="model-sheet" hidden aria-label="How the value model works">
+  <div class="sheet-head">
+    <div>
+      <p class="eyebrow">the model, in full</p>
+      <h2>Implied value from three inputs</h2>
+    </div>
+    <button id="model-close" class="close-btn" type="button" aria-label="Close model sheet">Close</button>
+  </div>
+  <div class="sheet-body">
+    <p class="formula" id="formula">implied FDV = TVL × benchmark multiple × growth multiplier × maturity multiplier</p>
+    <div class="sheet-grid">
+      <div>
+        <h3>1 · Benchmark multiple</h3>
+        <p>The median market-cap-to-TVL multiple of the live-token protocols in the same category, from this snapshot alone. A category needs at least five live peers; otherwise the whole market's median stands in. The multiple is clamped to the stated range and every row names the peers behind it.</p>
+      </div>
+      <div>
+        <h3>2 · Growth multiplier</h3>
+        <p>The protocol's seven-day TVL change, clamped and scaled by the growth weight. A protocol whose TVL grew is worth more than an identical one whose TVL shrank, with the same rule for both.</p>
+      </div>
+      <div>
+        <h3>3 · Maturity multiplier</h3>
+        <p>Days since DefiLlama began tracking the protocol with no token recorded, against a four-year cap. A protocol that has run longer without a token gets the higher multiplier; an unknown listing date takes the median pre-token age and the row says so.</p>
+      </div>
+      <div>
+        <h3>What is excluded</h3>
+        <p>Live-token protocols, CEX entries, and wrapped, staked, bridged or versioned products of a token that already trades. The watchlist is the floor: every watchlist slug is scored, and the board adds the protocols the list leaves out.</p>
+      </div>
+    </div>
+    <div class="constants" id="constants"></div>
+    <p class="sheet-note">No slug is special-cased: one function scores every protocol. The snapshot carries no ranking, no implied value and no farm plan; deriving them is this entry's work.</p>
+  </div>
+</section>
+
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
